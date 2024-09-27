@@ -29,7 +29,7 @@ Shipyard is a sleek, responsive iFrame widget designed for [Homarr](https://gith
 
 Pull
 
-`git clone https://github.com/your-repo/shipyard.git`
+`git clone https://github.com/MattDGTL/shipyard.git`
 
 CD into the main directory
 
