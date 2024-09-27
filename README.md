@@ -27,6 +27,14 @@ Shipyard is a sleek, responsive iFrame widget designed for [Homarr](https://gith
 
 # Installation
 
+Pull
+
+`git clone https://github.com/your-repo/shipyard.git`
+
+CD into the main directory
+
+`CD shipyard/`
+
 In the directory where your Dockerfile, app.py, and templates folder are located, run the following commands:
 
 `docker build -t shipyard .`
