@@ -33,7 +33,7 @@ Pull
 
 CD into the main directory
 
-`CD shipyard/`
+`cd shipyard/`
 
 In the directory where your Dockerfile, app.py, and templates folder are located, run the following commands:
 
