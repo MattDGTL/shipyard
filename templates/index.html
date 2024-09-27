@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Containers</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            background-color: #25262B;
+            color: #C1C2C5;
+            margin: 0;
+            padding: 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #44475A transparent; 
+        }
+
+        .container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background-color: #44475A;
+            border-radius: 10px;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            opacity: 0;
+        }
+
+        .container:hover::-webkit-scrollbar-thumb {
+            opacity: 1;
+        }
+
+        .container-content {
+            padding-bottom: 50px;
+        }
+
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            background-color: #1A1B1E;
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-size: 0.85rem;
+            border-radius: 10px 10px 0px 0px;
+        }
+
+        .header > div {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+
+        .list-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #44475A;
+            transition: background-color 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .list-item:hover {
+            background-color: rgba(68, 71, 90, 0.2);
+        }
+
+
+        .container-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+            padding-left: 5px;
+            font-size: 0.85rem;
+        }
+
+
+        .status-icon {
+            font-size: 1rem;
+            padding-right: 5px;
+            text-align: left;
+            display: flex;
+        }
+
+
+        .status-icon.running {
+            color: #FF5555;
+        }
+
+        .status-icon.stopped {
+            color: #50FA7B;
+        }
+
+        .status-icon.other {
+            color: #BD93F9;
+        }
+
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: white;
+                color: #282a36;
+            }
+
+            .header {
+                background-color: rgb(255, 255, 255);
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
+                top: 0px;
+            }
+
+            .container {
+                scrollbar-color: #E2E8F0 transparent;
+            }
+
+            .container::-webkit-scrollbar-thumb {
+                background-color: #E2E8F0;
+            }
+
+            .list-item {
+                border-bottom: 1px solid #E2E8F0;
+            }
+
+            /* .header-light {
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+
+            } */
+
+            .list-item:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <div onclick="sortBy('name')">Docker Container</div>
+            <div onclick="sortBy('status')">Status</div>
+        </div>
+
+        <div class="container-content">
+            {% for container in containers %}
+            <div class="list-item" onclick="manageContainer('{{ container.id }}', '{{ container.status }}')">
+                <div class="container-name">{{ container.name }}</div>
+                <div class="status-icon {{ 'running' if container.status == 'running' else 'stopped' if container.status == 'exited' else 'other' }}">
+                    {% if container.status == 'running' %}
+                        ✅ <!-- Stop icon (red square) -->
+                    {% elif container.status == 'exited' %}
+                        ❌ <!-- Play icon (green triangle) -->
+                    {% else %}
+                        🟣 <!-- Dot icon (for other statuses) -->
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        let sortDirection = true;
+
+        function sortBy(attribute) {
+            const container = document.querySelector('.container-content');
+            const listItems = Array.from(container.children);
+
+            listItems.sort((a, b) => {
+                const aText = a.querySelector(`.container-name`).textContent.toLowerCase();
+                const bText = b.querySelector(`.container-name`).textContent.toLowerCase();
+                
+                if (attribute === 'name') {
+                    return sortDirection ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                } else {
+                    const aStatus = a.querySelector(`.status-icon`).classList.contains('running') ? 1 : 0;
+                    const bStatus = b.querySelector(`.status-icon`).classList.contains('running') ? 1 : 0;
+                    return sortDirection ? aStatus - bStatus : bStatus - aStatus;
+                }
+            });
+
+            listItems.forEach(item => container.appendChild(item));
+
+            sortDirection = !sortDirection; 
+        }
+
+        function manageContainer(containerId, status) {
+            if (status === 'running') {
+                fetch('/stop/' + containerId)
+                    .then(response => location.reload());
+            } else {
+                fetch('/start/' + containerId)
+                    .then(response => location.reload());
+            }
+        }
+    </script>
+</body>
+</html>
